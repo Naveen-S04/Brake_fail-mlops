@@ -2,43 +2,50 @@ stages:
   generate_data:
     cmd: python -m src.stages.00_generate_data --params params.yaml
     deps:
-    - src/stages/00_generate_data.py
-    - params.yaml
+      - src/stages/00_generate_data.py
+      - params.yaml
     outs:
-    - data/raw/brake_sensor_data.csv
+      - data/raw/brake_sensor_data.csv
 
   split:
     cmd: python -m src.stages.01_split --params params.yaml
     deps:
-    - src/stages/01_split.py
-    - data/raw/brake_sensor_data.csv
-    - params.yaml
+      - src/stages/01_split.py
+      - data/raw/brake_sensor_data.csv
+      - params.yaml
     outs:
-    - data/processed/train.csv
-    - data/processed/test.csv
+      - data/processed/train.csv
+      - data/processed/test.csv
 
   features:
     cmd: python -m src.stages.02_features --params params.yaml
     deps:
-    - src/stages/02_features.py
-    - data/processed/train.csv
-    - data/processed/test.csv
-    - params.yaml
+      - src/stages/02_features.py
+      - data/processed/train.csv
+      - data/processed/test.csv
+      - params.yaml
     outs:
-    - data/processed/X_train.npy
-    - data/processed/y_train.npy
-    - data/processed/X_test.npy
-    - data/processed/y_test.npy
-    - artifacts/preprocess.joblib
+      - data/features/train_features.csv
+      - data/features/test_features.csv
 
   train:
     cmd: python -m src.stages.03_train --params params.yaml
     deps:
-    - src/stages/03_train.py
-    - data/processed/X_train.npy
-    - data/processed/y_train.npy
-    - artifacts/preprocess.joblib
-    - params.yaml
+      - src/stages/03_train.py
+      - data/features/train_features.csv
+      - data/features/test_features.csv
+      - params.yaml
     outs:
-    - artifacts/last_run.txt
+      - models/model.pkl
+    metrics:
+      - metrics.json
 
+  evaluate:
+    cmd: python -m src.stages.04_evaluate --params params.yaml
+    deps:
+      - src/stages/04_evaluate.py
+      - models/model.pkl
+      - data/features/test_features.csv
+      - params.yaml
+    metrics:
+      - evaluation.json
