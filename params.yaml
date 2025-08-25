@@ -1,0 +1,24 @@
+data:
+  generate: true            # set to false to use your own CSV at data/raw/brake_sensor_data.csv
+  n_samples: 20000
+  test_size: 0.2
+  random_state: 42
+
+features:
+  impute_strategy: median
+  scale: true
+
+train:
+  model_type: "RandomForestClassifier"
+  n_estimators: 50    # changed from 50
+  max_depth: 5         # changed from 5
+  min_samples_split: 4
+  min_samples_leaf: 2
+  class_weight: "balanced"
+  random_state: 42
+
+  
+mlflow:
+  experiment_name: "brake-failure-exp"
+  tracking_uri: "http://127.0.0.1:5000"
+

@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# MLflow & DVC
+mlruns/
+.artifacts/
+.dvc/
+.cache/
+**/.ipynb_checkpoints/
+
+# Data & artifacts
+data/processed/
+artifacts/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
