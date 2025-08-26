@@ -35,7 +35,7 @@ stages:
       - data/processed/X_train.npy
       - data/processed/y_train.npy
     outs:
-      - models/model.joblib
+      - artifacts/model.joblib
 
   evaluate:
     cmd: python -m src.stages.04_evaluate --params params.yaml
