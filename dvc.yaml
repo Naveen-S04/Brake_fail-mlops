@@ -33,19 +33,19 @@ stages:
 
 
     train:
-    cmd: python -m src.stages.03_train --params params.yaml
-    deps:
-      - src/stages/03_train.py
-      - data/processed/X_train.npy
-      - data/processed/y_train.npy
-      - data/processed/X_test.npy
-      - data/processed/y_test.npy
-      - artifacts/preprocess.joblib
-      - params.yaml
-    outs:
-      - models/model.pkl
-    metrics:
-      - metrics.json
+     cmd: python -m src.stages.03_train --params params.yaml
+     deps:
+       - src/stages/03_train.py
+       - data/processed/X_train.npy
+       - data/processed/y_train.npy
+       - data/processed/X_test.npy
+       - data/processed/y_test.npy
+       - artifacts/preprocess.joblib
+       - params.yaml
+     outs:
+       - models/model.pkl
+     metrics:
+       - metrics.json
 
 
   evaluate:
