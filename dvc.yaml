@@ -3,7 +3,6 @@ stages:
     cmd: python -m src.stages.00_generate_data --params params.yaml
     deps:
       - src/stages/00_generate_data.py
-      - params.yaml
     outs:
       - data/raw/brake_sensor_data.csv
 
@@ -12,7 +11,6 @@ stages:
     deps:
       - src/stages/01_split.py
       - data/raw/brake_sensor_data.csv
-      - params.yaml
     outs:
       - data/processed/train.csv
       - data/processed/test.csv
@@ -23,7 +21,6 @@ stages:
       - src/stages/02_features.py
       - data/processed/train.csv
       - data/processed/test.csv
-      - params.yaml
     outs:
       - data/processed/X_train.npy
       - data/processed/y_train.npy
@@ -31,7 +28,7 @@ stages:
       - data/processed/y_test.npy
       - artifacts/preprocess.joblib
 
-    train:
+  train:
     cmd: python -m src.stages.03_train --params params.yaml
     deps:
       - src/stages/03_train.py
@@ -40,14 +37,12 @@ stages:
     outs:
       - artifacts/model.joblib
 
-
   evaluate:
     cmd: python -m src.stages.04_evaluate --params params.yaml
     deps:
       - src/stages/04_evaluate.py
-      - models/model.pkl
       - data/processed/X_test.npy
       - data/processed/y_test.npy
-      - params.yaml
-    metrics:
-      - evaluation.json
+      - artifacts/model.joblib
+    outs:
+      - artifacts/metrics.json
