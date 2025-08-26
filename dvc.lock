@@ -2,109 +2,117 @@ schema: '2.0'
 stages:
   generate_data:
     cmd: python -m src.stages.00_generate_data --params params.yaml
-    deps:
-    - path: params.yaml
-      hash: md5
-      md5: 515b665a92e37d19814d8b79819f44d4
-      size: 519
-    - path: src/stages/00_generate_data.py
-      hash: md5
-      md5: 29b2fbe31b12a769c8c2468abb82a5a9
-      size: 2059
     outs:
-    - path: data/raw/brake_sensor_data.csv
+    - path: data/processed/test.csv
       hash: md5
-      md5: a340cd809ae7de9a6759dbbfe3b7bf7a
-      size: 2632514
+      md5: 0a876246319e3ea5569dc9b4b73a64ac
+      size: 464027
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 807a2b777d50ea450782bdfac11cc6af
+      size: 1856408
   split:
     cmd: python -m src.stages.01_split --params params.yaml
     deps:
-    - path: data/raw/brake_sensor_data.csv
-      hash: md5
-      md5: a340cd809ae7de9a6759dbbfe3b7bf7a
-      size: 2632514
-    - path: params.yaml
-      hash: md5
-      md5: 515b665a92e37d19814d8b79819f44d4
-      size: 519
-    - path: src/stages/01_split.py
-      hash: md5
-      md5: 1ab9a43c864712a6b40aa64d96251bb5
-      size: 822
-    outs:
     - path: data/processed/test.csv
       hash: md5
-      md5: 4664c99f94a509bcdbfffdf4016d2d71
-      size: 519210
+      md5: 0a876246319e3ea5569dc9b4b73a64ac
+      size: 464027
     - path: data/processed/train.csv
       hash: md5
-      md5: 4d4a3ad5991972f6b3b786ca4f49f45a
-      size: 2078949
-  features:
-    cmd: python -m src.stages.02_features --params params.yaml
-    deps:
-    - path: data/processed/test.csv
-      hash: md5
-      md5: 4664c99f94a509bcdbfffdf4016d2d71
-      size: 519210
-    - path: data/processed/train.csv
-      hash: md5
-      md5: 4d4a3ad5991972f6b3b786ca4f49f45a
-      size: 2078949
-    - path: params.yaml
-      hash: md5
-      md5: 515b665a92e37d19814d8b79819f44d4
-      size: 519
-    - path: src/stages/02_features.py
-      hash: md5
-      md5: 42f90ef6886683de057217fb705d4aa3
-      size: 1739
+      md5: 807a2b777d50ea450782bdfac11cc6af
+      size: 1856408
     outs:
-    - path: artifacts/preprocess.joblib
-      hash: md5
-      md5: 4d0a6aae58119082214cf39d2bb41ec1
-      size: 1190
     - path: data/processed/X_test.npy
       hash: md5
-      md5: a44cee9706cbe519e4417a82478a5bd4
+      md5: 707f84c9d80e9b6e7a3127bb298e1e02
       size: 224128
     - path: data/processed/X_train.npy
       hash: md5
-      md5: ff92647b9d39c308a448851c785af3e6
+      md5: c7257b3c9c4938627a9732b64a3e484f
       size: 896128
     - path: data/processed/y_test.npy
       hash: md5
-      md5: 45485613887cc3d84d68517268f7c577
+      md5: cc60d8253f31548034875ccdd1bbac99
       size: 32128
     - path: data/processed/y_train.npy
       hash: md5
-      md5: 71aa5e0e02d1b70530fd30688147d37d
+      md5: 85188de03fc700fbb05b0132cb02330e
       size: 128128
+  features:
+    cmd: python -m src.stages.02_features --params params.yaml
+    deps:
+    - path: data/processed/X_test.npy
+      hash: md5
+      md5: c94ae334054fb2bd70b9d11724f4bf30
+      size: 224128
+    - path: data/processed/X_train.npy
+      hash: md5
+      md5: db11b79a3d67cd3b3b81570d112c04e0
+      size: 896128
+    - path: data/processed/y_test.npy
+      hash: md5
+      md5: cc60d8253f31548034875ccdd1bbac99
+      size: 32128
+    - path: data/processed/y_train.npy
+      hash: md5
+      md5: 85188de03fc700fbb05b0132cb02330e
+      size: 128128
+    outs:
+    - path: artifacts/preprocess.joblib
+      hash: md5
+      md5: fc6750f7a7a476b79356976e49875559
+      size: 1190
   train:
     cmd: python -m src.stages.03_train --params params.yaml
     deps:
     - path: artifacts/preprocess.joblib
       hash: md5
-      md5: 4d0a6aae58119082214cf39d2bb41ec1
+      md5: fc6750f7a7a476b79356976e49875559
       size: 1190
+    - path: data/processed/X_test.npy
+      hash: md5
+      md5: c94ae334054fb2bd70b9d11724f4bf30
+      size: 224128
     - path: data/processed/X_train.npy
       hash: md5
-      md5: ff92647b9d39c308a448851c785af3e6
+      md5: db11b79a3d67cd3b3b81570d112c04e0
       size: 896128
+    - path: data/processed/y_test.npy
+      hash: md5
+      md5: cc60d8253f31548034875ccdd1bbac99
+      size: 32128
     - path: data/processed/y_train.npy
       hash: md5
-      md5: 71aa5e0e02d1b70530fd30688147d37d
+      md5: 85188de03fc700fbb05b0132cb02330e
       size: 128128
-    - path: params.yaml
-      hash: md5
-      md5: dbf3bd2c77d2c1bd7fb9e754b7bb2a1e
-      size: 519
-    - path: src/stages/03_train.py
-      hash: md5
-      md5: cfb654bff527861c936f58cec22d0cdf
-      size: 1974
     outs:
-    - path: artifacts/last_run.txt
+    - path: artifacts/model.joblib
       hash: md5
-      md5: 4552d9fddbc5bcce1d2ca72ae657d7ef
-      size: 32
+      md5: 162cb9f8c35ed299899afac92ed095f5
+      size: 182537
+    - path: mlruns
+      hash: md5
+      md5: 3c7e2907007c4facf51ca8900a1b87c8.dir
+      size: 182368
+      nfiles: 22
+  evaluate:
+    cmd: python -m src.stages.04_evaluate --params params.yaml
+    deps:
+    - path: artifacts/model.joblib
+      hash: md5
+      md5: 162cb9f8c35ed299899afac92ed095f5
+      size: 182537
+    - path: data/processed/X_test.npy
+      hash: md5
+      md5: c94ae334054fb2bd70b9d11724f4bf30
+      size: 224128
+    - path: data/processed/y_test.npy
+      hash: md5
+      md5: cc60d8253f31548034875ccdd1bbac99
+      size: 32128
+    outs:
+    - path: artifacts/metrics.json
+      hash: md5
+      md5: dbaed2cf030e00713a7a9d41b8e6e17f
+      size: 54
