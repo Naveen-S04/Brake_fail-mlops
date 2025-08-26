@@ -16,20 +16,21 @@ def main(params_path):
     X_test = np.load("data/processed/X_test.npy")
     y_test = np.load("data/processed/y_test.npy")
 
+    # model hyperparameters
+    n_estimators = P["train"]["n_estimators"]
+    max_depth = P["train"]["max_depth"]
+
     # ensure artifact dir
-    model_dir = "models"
+    model_dir = "artifacts"
     ensure_dir(model_dir)
-    model_path = os.path.join(model_dir, "model.pkl")
+    model_path = os.path.join(model_dir, "model.joblib")
 
     # --- MLflow setup ---
-    mlflow.set_tracking_uri("file:./mlruns")   # local logging
+    mlflow.set_tracking_uri("file:./mlruns")
     mlflow.set_experiment("brake-failure-exp")
 
+    # train & log inside MLflow run
     with mlflow.start_run(run_name="rf_train"):
-        # model hyperparameters from params.yaml
-        n_estimators = P["train"]["n_estimators"]
-        max_depth = P["train"]["max_depth"]
-
         clf = RandomForestClassifier(
             n_estimators=n_estimators,
             max_depth=max_depth,
@@ -49,7 +50,6 @@ def main(params_path):
         mlflow.log_metric("f1_score", f1)
 
         # save model
-        model_path = os.path.join(model_dir, "model.joblib")
         joblib.dump(clf, model_path)
         mlflow.sklearn.log_model(clf, "model")
 
