@@ -1,24 +1,13 @@
 stages:
   generate_data:
     cmd: python -m src.stages.00_generate_data --params params.yaml
-    deps:
-      - src/stages/00_generate_data.py
-    outs:
-      - data/raw/brake_sensor_data.csv
-
-  split:
-    cmd: python -m src.stages.01_split --params params.yaml
-    deps:
-      - src/stages/01_split.py
-      - data/raw/brake_sensor_data.csv
     outs:
       - data/processed/train.csv
       - data/processed/test.csv
 
-  features:
-    cmd: python -m src.stages.02_features --params params.yaml
+  split:
+    cmd: python -m src.stages.01_split --params params.yaml
     deps:
-      - src/stages/02_features.py
       - data/processed/train.csv
       - data/processed/test.csv
     outs:
@@ -26,23 +15,34 @@ stages:
       - data/processed/y_train.npy
       - data/processed/X_test.npy
       - data/processed/y_test.npy
+
+  features:
+    cmd: python -m src.stages.02_features --params params.yaml
+    deps:
+      - data/processed/X_train.npy
+      - data/processed/y_train.npy
+      - data/processed/X_test.npy
+      - data/processed/y_test.npy
+    outs:
       - artifacts/preprocess.joblib
 
   train:
     cmd: python -m src.stages.03_train --params params.yaml
     deps:
-      - src/stages/03_train.py
+      - artifacts/preprocess.joblib
       - data/processed/X_train.npy
       - data/processed/y_train.npy
+      - data/processed/X_test.npy
+      - data/processed/y_test.npy
     outs:
       - artifacts/model.joblib
+      - mlruns  # MLflow tracking folder
 
   evaluate:
     cmd: python -m src.stages.04_evaluate --params params.yaml
     deps:
-      - src/stages/04_evaluate.py
+      - artifacts/model.joblib
       - data/processed/X_test.npy
       - data/processed/y_test.npy
-      - artifacts/model.joblib
     outs:
       - artifacts/metrics.json

@@ -1,19 +1,31 @@
 import argparse, os
+import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from src.utils import read_params, ensure_dir
+from src.utils import ensure_dir, read_params
+
+FEATURES = ["speed","pressure","temperature","brake_pad_thickness","vibration","fluid_level","wheel_speed_diff"]
+TARGET = "brake_failed"
 
 def main(params_path):
     P = read_params(params_path)
-    df = pd.read_csv("data/raw/brake_sensor_data.csv")
-    train_df, test_df = train_test_split(
-        df, test_size=P["data"]["test_size"], random_state=P["data"]["random_state"], stratify=df["brake_failed"]
-    )
+
+    train_df = pd.read_csv("data/processed/train.csv")
+    test_df = pd.read_csv("data/processed/test.csv")
+
+    X_train = train_df[FEATURES].values
+    y_train = train_df[TARGET].values
+    X_test = test_df[FEATURES].values
+    y_test = test_df[TARGET].values
+
     out_dir = "data/processed"
     ensure_dir(out_dir)
-    train_df.to_csv(os.path.join(out_dir, "train.csv"), index=False)
-    test_df.to_csv(os.path.join(out_dir, "test.csv"), index=False)
-    print("Split:", train_df.shape, test_df.shape)
+
+    np.save(os.path.join(out_dir, "X_train.npy"), X_train)
+    np.save(os.path.join(out_dir, "y_train.npy"), y_train)
+    np.save(os.path.join(out_dir, "X_test.npy"), X_test)
+    np.save(os.path.join(out_dir, "y_test.npy"), y_test)
+
+    print("Split:", X_train.shape, X_test.shape)
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
