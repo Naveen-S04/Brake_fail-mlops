@@ -1,52 +1,60 @@
-import argparse, os, json
+import argparse, os, joblib
 import numpy as np
-import mlflow, mlflow.sklearn
+import mlflow
+import mlflow.sklearn
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import roc_auc_score, f1_score
+from sklearn.metrics import accuracy_score, f1_score
 from src.utils import read_params, ensure_dir
 
 def main(params_path):
+    # read params
     P = read_params(params_path)
-    tracking_uri = P["mlflow"].get("tracking_uri") or os.environ.get("MLFLOW_TRACKING_URI", "")
-    exp_name = P["mlflow"].get("experiment_name") or os.environ.get("MLFLOW_EXPERIMENT_NAME", "default")
 
-    if tracking_uri:
-        mlflow.set_tracking_uri(tracking_uri)
-    mlflow.set_experiment(exp_name)
-
+    # load preprocessed features
     X_train = np.load("data/processed/X_train.npy")
     y_train = np.load("data/processed/y_train.npy")
+    X_test = np.load("data/processed/X_test.npy")
+    y_test = np.load("data/processed/y_test.npy")
 
-    with mlflow.start_run() as run:
-        params = P["train"]
-        mlflow.log_params(params)
+    # ensure artifact dir
+    model_dir = "models"
+    ensure_dir(model_dir)
+    model_path = os.path.join(model_dir, "model.pkl")
 
-        model = RandomForestClassifier(
-            n_estimators=params["n_estimators"],
-            max_depth=params["max_depth"],
-            min_samples_split=params["min_samples_split"],
-            min_samples_leaf=params["min_samples_leaf"],
-            class_weight=params["class_weight"],
-            random_state=params["random_state"],
+    # --- MLflow setup ---
+    mlflow.set_tracking_uri("file:./mlruns")   # local logging
+    mlflow.set_experiment("brake-failure-exp")
+
+    with mlflow.start_run(run_name="rf_train"):
+        # model hyperparameters from params.yaml
+        n_estimators = P["train"]["n_estimators"]
+        max_depth = P["train"]["max_depth"]
+
+        clf = RandomForestClassifier(
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            random_state=42
         )
-        model.fit(X_train, y_train)
+        clf.fit(X_train, y_train)
 
-        # quick train metrics
-        train_proba = model.predict_proba(X_train)[:,1]
-        auc = roc_auc_score(y_train, train_proba)
-        f1 = f1_score(y_train, (train_proba >= 0.5).astype(int))
-        mlflow.log_metric("train_auc", float(auc))
-        mlflow.log_metric("train_f1", float(f1))
+        # predictions
+        y_pred = clf.predict(X_test)
+        acc = accuracy_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred)
 
-        # log model
-        sample = X_train[:5]
-        mlflow.sklearn.log_model(model, "model", input_example=sample)
+        # log metrics + params
+        mlflow.log_param("n_estimators", n_estimators)
+        mlflow.log_param("max_depth", max_depth)
+        mlflow.log_metric("accuracy", acc)
+        mlflow.log_metric("f1_score", f1)
 
-        # save run id for serving
-        ensure_dir("artifacts")
-        with open("artifacts/last_run.txt","w") as f:
-            f.write(run.info.run_id)
-        print("Run ID:", run.info.run_id)
+        # save model
+        model_path = os.path.join(model_dir, "model.joblib")
+        joblib.dump(clf, model_path)
+        mlflow.sklearn.log_model(clf, "model")
+
+        print(f"✅ Model trained | Accuracy={acc:.3f} F1={f1:.3f}")
+        print(f"Model saved at: {model_path}")
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
