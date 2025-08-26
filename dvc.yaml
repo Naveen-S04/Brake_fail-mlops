@@ -32,17 +32,21 @@ stages:
       - artifacts/preprocess.joblib
 
 
-  train:
+    train:
     cmd: python -m src.stages.03_train --params params.yaml
     deps:
       - src/stages/03_train.py
-      - data/features/train_features.csv
-      - data/features/test_features.csv
+      - data/processed/X_train.npy
+      - data/processed/y_train.npy
+      - data/processed/X_test.npy
+      - data/processed/y_test.npy
+      - artifacts/preprocess.joblib
       - params.yaml
     outs:
       - models/model.pkl
     metrics:
       - metrics.json
+
 
   evaluate:
     cmd: python -m src.stages.04_evaluate --params params.yaml

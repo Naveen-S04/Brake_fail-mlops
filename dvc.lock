@@ -53,7 +53,7 @@ stages:
       size: 2078949
     - path: params.yaml
       hash: md5
-      md5: dbf3bd2c77d2c1bd7fb9e754b7bb2a1e
+      md5: 515b665a92e37d19814d8b79819f44d4
       size: 519
     - path: src/stages/02_features.py
       hash: md5
