@@ -25,8 +25,12 @@ stages:
       - data/processed/test.csv
       - params.yaml
     outs:
-      - data/features/train_features.csv
-      - data/features/test_features.csv
+      - data/processed/X_train.npy
+      - data/processed/y_train.npy
+      - data/processed/X_test.npy
+      - data/processed/y_test.npy
+      - artifacts/preprocess.joblib
+
 
   train:
     cmd: python -m src.stages.03_train --params params.yaml
